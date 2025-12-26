@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Amazons</title>
+		<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+		<script
+			crossorigin
+			src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+		></script>
+		<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+		<style>
+			:root {
+				--bg: #fefbe3;
+				--text: #3a3125;
+				--muted: #6a5f52;
+				--accent: #e7a24a;
+				--tile-light: #f5cfa1;
+				--tile-dark: #cc8a45;
+				--panel: rgba(255, 255, 255, 0.75);
+				--border: rgba(0, 0, 0, 0.08);
+				--highlight-move: rgba(104, 178, 232, 0.25);
+				--highlight-arrow: rgba(216, 87, 66, 0.22);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Manrope", "Inter", "Segoe UI", system-ui,
+					-apple-system, sans-serif;
+				background: var(--bg);
+				color: var(--text);
+				min-height: 100vh;
+				overflow-x: hidden;
+			}
+
+			body::before {
+				content: "";
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				background-image: linear-gradient(
+						rgba(0, 0, 0, 0.03) 1px,
+						transparent 1px
+					),
+					linear-gradient(
+						90deg,
+						rgba(0, 0, 0, 0.03) 1px,
+						transparent 1px
+					);
+				background-size: 80px 80px;
+				opacity: 0.6;
+				z-index: 0;
+			}
+
+			#root {
+				position: relative;
+				z-index: 2;
+			}
+
+			.floating-layer {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				overflow: hidden;
+				z-index: 1;
+			}
+
+			.tile-float {
+				position: absolute;
+				width: 120px;
+				height: 120px;
+				border-radius: 18px;
+				background: linear-gradient(90deg, #f4c586 50%, #c98740 50%),
+					linear-gradient(#f4c586 50%, #c98740 50%);
+				background-size: 48px 48px;
+				opacity: 0.32;
+				box-shadow: 0 16px 26px rgba(0, 0, 0, 0.16);
+				--rot: rotate(0deg);
+				transform: var(--rot);
+				animation: floaty 8s ease-in-out infinite alternate;
+			}
+
+			.tile-float .mini-piece {
+				position: absolute;
+				font-size: 26px;
+				color: #2f241a;
+				opacity: 0.6;
+				text-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+			}
+
+			.tile-float .mini-dot {
+				position: absolute;
+				width: 16px;
+				height: 16px;
+				border-radius: 50%;
+				background: #1f1c17;
+				opacity: 0.7;
+				box-shadow: 0 0 0 6px rgba(31, 28, 23, 0.1);
+			}
+
+			@keyframes floaty {
+				from {
+					transform: var(--rot) translateY(-6px);
+				}
+				to {
+					transform: var(--rot) translateY(6px);
+				}
+			}
+
+			.page {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 36px 24px 64px;
+			}
+
+			.hero {
+				text-align: center;
+				padding: 90px 16px 60px;
+			}
+
+			.hero h1 {
+				margin: 12px 0;
+				font-size: clamp(2.4rem, 6vw, 3.8rem);
+				letter-spacing: 0.5px;
+				text-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+			}
+
+			.hero p {
+				max-width: 620px;
+				margin: 12px auto 32px;
+				color: var(--muted);
+				line-height: 1.6;
+				font-size: 1.05rem;
+			}
+
+			.actions {
+				display: flex;
+				justify-content: center;
+				gap: 14px;
+				flex-wrap: wrap;
+			}
+
+			.btn {
+				border: none;
+				border-radius: 14px;
+				padding: 14px 18px;
+				font-size: 1rem;
+				font-weight: 700;
+				cursor: pointer;
+				color: #3a3125;
+				background: linear-gradient(145deg, #ffd58a, #f3b85c);
+				box-shadow: 0 10px 22px rgba(221, 156, 59, 0.26);
+				transition: transform 0.15s ease, box-shadow 0.15s ease;
+			}
+
+			.btn:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 14px 26px rgba(221, 156, 59, 0.3);
+			}
+
+			.btn.secondary {
+				background: #f3e7c4;
+				box-shadow: none;
+				border: 1px solid rgba(0, 0, 0, 0.06);
+			}
+
+			.panel {
+				border-radius: 20px;
+				border: 1px solid var(--border);
+				background: var(--panel);
+				box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+			}
+
+			.setup-card {
+				margin: 0 auto;
+				margin-top: -10px;
+				max-width: 560px;
+				padding: 22px 22px 18px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 12px;
+			}
+
+			label {
+				display: block;
+				margin-bottom: 6px;
+				font-weight: 700;
+				color: #4a3f31;
+				font-size: 0.95rem;
+			}
+
+			select {
+				width: 100%;
+				padding: 10px 12px;
+				border-radius: 12px;
+				border: 1px solid rgba(0, 0, 0, 0.08);
+				background: #fffdf4;
+				color: #3a3125;
+				font-size: 1rem;
+				outline: none;
+				box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+			}
+
+			.game-shell {
+				margin-top: 32px;
+				padding: 20px;
+			}
+
+			.game-top {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.status {
+				font-weight: 800;
+				font-size: 1.05rem;
+			}
+
+			.board-wrap {
+				margin-top: 16px;
+				display: flex;
+				justify-content: center;
+			}
+
+			.board {
+				display: grid;
+				gap: 2px;
+				padding: 12px;
+				background: linear-gradient(180deg, #f7d9a8, #f1c57b);
+				border-radius: 18px;
+				border: 1px solid rgba(0, 0, 0, 0.08);
+				box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5),
+					inset 0 -2px 0 rgba(0, 0, 0, 0.05),
+					0 18px 26px rgba(0, 0, 0, 0.12);
+			}
+
+			.board.locked {
+				pointer-events: none;
+				filter: none;
+				opacity: 1;
+			}
+
+			.cell {
+				width: var(--cell-size);
+				height: var(--cell-size);
+				background: var(--tile-light);
+				border: 1px solid rgba(0, 0, 0, 0.05);
+				border-radius: 10px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: clamp(26px, 3.4vw, 44px);
+				cursor: pointer;
+				position: relative;
+				transition: background 0.15s ease, transform 0.12s ease,
+					box-shadow 0.2s ease;
+			}
+
+			.cell.dark {
+				background: var(--tile-dark);
+			}
+
+			.cell:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+			}
+
+			.cell .queen {
+				text-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+				font-size: 1.55em;
+				font-weight: 900;
+			}
+
+			.cell .queen.white {
+				color: #f8f8f8;
+				filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+			}
+
+			.cell .queen.black {
+				color: #2e2b24;
+				filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+			}
+
+			.cell.arrow {
+				background: inherit;
+				border-color: rgba(0, 0, 0, 0.2);
+				box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+			}
+
+			.cell.arrow::after {
+				content: "🔥";
+				color: #1f1c17;
+				font-size: 2.6rem;
+				opacity: 0.9;
+			}
+
+			.inline-actions {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+
+			.modal-overlay {
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.45);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 10;
+				padding: 20px;
+			}
+
+			.modal-content {
+				width: 60vw;
+				max-width: 720px;
+				max-height: 85vh;
+				overflow-y: auto;
+				background: #fffaf1;
+				border-radius: 18px;
+				border: 1px solid rgba(0, 0, 0, 0.08);
+				padding: 24px;
+				box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+				position: relative;
+			}
+
+			.modal-close {
+				position: fixed;
+				top: 18px;
+				right: 18px;
+				z-index: 11;
+				background: #fefbe3;
+				border: 1px solid rgba(0, 0, 0, 0.08);
+				border-radius: 50%;
+				width: 38px;
+				height: 38px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 1.2rem;
+				cursor: pointer;
+				box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+			}
+
+			.cell.highlight-move {
+				background: var(--highlight-move);
+				border-color: rgba(104, 178, 232, 0.6);
+				box-shadow: inset 0 0 0 1px rgba(104, 178, 232, 0.5);
+			}
+
+			.cell.highlight-arrow {
+				background: var(--highlight-arrow);
+				border-color: rgba(216, 87, 66, 0.6);
+				box-shadow: inset 0 0 0 1px rgba(216, 87, 66, 0.5);
+			}
+
+			.cell.selected {
+				box-shadow: 0 0 0 2px rgba(231, 162, 74, 0.9),
+					inset 0 0 0 1px rgba(231, 162, 74, 0.7);
+			}
+
+			@media (max-width: 720px) {
+				.page {
+					padding: 22px 14px 44px;
+				}
+
+				.actions {
+					flex-direction: column;
+				}
+
+				.btn {
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="floating-layer" id="floaters"></div>
+		<div id="root"></div>
+		<script type="text/babel">
+			const { useState, useEffect, useMemo, useRef } = React;
+
+			const directions = [
+				[-1, 0],
+				[1, 0],
+				[0, -1],
+				[0, 1],
+				[-1, -1],
+				[1, 1],
+				[1, -1],
+				[-1, 1],
+			];
+
+			const startPositions = {
+				6: {
+					white: [
+						[2, 0],
+						[3, 5],
+					],
+					black: [
+						[5, 2],
+						[0, 3],
+					],
+				},
+				8: {
+					white: [
+						[2, 0],
+						[0, 3],
+						[1, 7],
+					],
+					black: [
+						[6, 0],
+						[7, 4],
+						[5, 7],
+					],
+				},
+				10: {
+					white: [
+						[0, 3],
+						[0, 6],
+						[3, 0],
+						[3, 9],
+					],
+					black: [
+						[9, 3],
+						[9, 6],
+						[6, 0],
+						[6, 9],
+					],
+				},
+			};
+
+			function buildBoard(size) {
+				const grid = Array.from({ length: size }, () => Array(size).fill(""));
+				const pos = startPositions[size];
+				pos.white.forEach(([r, c]) => (grid[r][c] = "white"));
+				pos.black.forEach(([r, c]) => (grid[r][c] = "black"));
+				return grid;
+			}
+
+			function opponent(player) {
+				return player === "white" ? "black" : "white";
+			}
+
+			function isLegalSlide(from, to, board) {
+				const [fr, fc] = from;
+				const [tr, tc] = to;
+				const dr = tr - fr;
+				const dc = tc - fc;
+				if (dr === 0 && dc === 0) return false;
+				if (dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) return false;
+				const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+				const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+				let r = fr + stepR;
+				let c = fc + stepC;
+				while (r !== tr || c !== tc) {
+					if (board[r][c] !== "") return false;
+					r += stepR;
+					c += stepC;
+				}
+				return board[tr][tc] === "";
+			}
+
+			function getSlides(from, board) {
+				const [r, c] = from;
+				const cells = [];
+				for (const [dr, dc] of directions) {
+					let nr = r + dr;
+					let nc = c + dc;
+					while (
+						nr >= 0 &&
+						nr < board.length &&
+						nc >= 0 &&
+						nc < board.length &&
+						board[nr][nc] === ""
+					) {
+						cells.push([nr, nc]);
+						nr += dr;
+						nc += dc;
+					}
+				}
+				return cells;
+			}
+
+			function simulateMove(board, from, to) {
+				const clone = board.map((row) => row.slice());
+				clone[to[0]][to[1]] = clone[from[0]][from[1]];
+				clone[from[0]][from[1]] = "";
+				return clone;
+			}
+
+			function getPlayerAmazons(player, board) {
+				const list = [];
+				for (let r = 0; r < board.length; r++) {
+					for (let c = 0; c < board.length; c++) {
+						if (board[r][c] === player) list.push([r, c]);
+					}
+				}
+				return list;
+			}
+
+			function generateAllMoves(player, board) {
+				const moves = [];
+				const amazons = getPlayerAmazons(player, board);
+				for (const from of amazons) {
+					const landings = getSlides(from, board);
+					for (const to of landings) {
+						const nextBoard = simulateMove(board, from, to);
+						const arrows = getSlides(to, nextBoard);
+						for (const arrow of arrows) moves.push({ from, to, arrow });
+					}
+				}
+				return moves;
+			}
+
+			function App() {
+				const setupRef = useRef(null);
+				const gameRef = useRef(null);
+
+				const [phase, setPhase] = useState("landing"); // landing | setup | play
+				const [gameMode, setGameMode] = useState("");
+				const [playerColor, setPlayerColor] = useState("white");
+				const [boardSize, setBoardSize] = useState(10);
+				const [board, setBoard] = useState(() => buildBoard(10));
+				const [currentPlayer, setCurrentPlayer] = useState("white");
+				const [selected, setSelected] = useState(null);
+				const [moveStep, setMoveStep] = useState("select");
+				const [status, setStatus] = useState(
+					"Click Play to choose mode and start."
+				);
+				const [gameEnded, setGameEnded] = useState(false);
+				const [locked, setLocked] = useState(false);
+				const [highlight, setHighlight] = useState({ cells: [], type: "" });
+				const [showRules, setShowRules] = useState(false);
+				const [winner, setWinner] = useState(null);
+
+				useEffect(() => {
+					// manage history for back navigation
+					window.history.replaceState({ phase: "landing" }, "", window.location.pathname);
+					const onPop = (e) => {
+						const phaseState = e.state?.phase || "landing";
+						if (phaseState === "landing") {
+							setPhase("landing");
+							setStatus("Click Play to choose mode and start.");
+							setHighlight({ cells: [], type: "" });
+							setSelected(null);
+							setMoveStep("select");
+							setGameEnded(false);
+							setLocked(false);
+						} else if (phaseState === "play") {
+							setPhase("play");
+						}
+					};
+					window.addEventListener("popstate", onPop);
+					return () => window.removeEventListener("popstate", onPop);
+				}, []);
+
+				useEffect(() => {
+					const floaters = document.getElementById("floaters");
+					if (!floaters || floaters.children.length) return;
+					const shapes = [
+						{ top: "6%", left: "10%", rot: "8deg", queen: "♛" },
+						{ top: "14%", right: "14%", rot: "-12deg", queen: "♕" },
+						{ top: "38%", right: "4%", rot: "6deg", dot: true },
+						{ left: "8%", bottom: "30%", rot: "-10deg", queen: "♕" },
+						{ bottom: "12%", right: "10%", rot: "14deg", dot: true },
+						{ left: "14%", top: "52%", rot: "-6deg", queen: "♛" },
+						{ right: "12%", bottom: "20%", rot: "4deg", queen: "♕" },
+						{ top: "22%", left: "46%", rot: "0deg", dot: true },
+						{ bottom: "18%", right: "36%", rot: "-4deg", dot: true },
+						{ bottom: "34%", left: "24%", rot: "6deg", queen: "♛" },
+					];
+					shapes.forEach((shape) => {
+						const el = document.createElement("div");
+						el.className = "tile-float";
+						el.style.setProperty("--rot", `rotate(${shape.rot || "0deg"})`);
+						if (shape.top) el.style.top = shape.top;
+						if (shape.bottom) el.style.bottom = shape.bottom;
+						if (shape.left) el.style.left = shape.left;
+						if (shape.right) el.style.right = shape.right;
+						if (shape.queen) {
+							const q = document.createElement("span");
+							q.className = "mini-piece";
+							q.textContent = shape.queen;
+							q.style.top = "14px";
+							q.style.left = "16px";
+							el.appendChild(q);
+						}
+						if (shape.dot) {
+							const d = document.createElement("div");
+							d.className = "mini-dot";
+							d.style.top = "50%";
+							d.style.left = "50%";
+							d.style.transform = "translate(-50%, -50%)";
+							el.appendChild(d);
+						}
+						floaters.appendChild(el);
+					});
+				}, []);
+
+				useEffect(() => {
+					if (
+						phase === "play" &&
+						gameMode === "ai" &&
+						currentPlayer !== playerColor &&
+						!gameEnded
+					) {
+						setLocked(true);
+						const t = setTimeout(() => runAi(), 2000);
+						return () => clearTimeout(t);
+					} else {
+						setLocked(false);
+					}
+				}, [phase, gameMode, currentPlayer, playerColor, gameEnded, board]);
+
+				const startNewGame = () => {
+					const freshBoard = buildBoard(boardSize);
+					setBoard(freshBoard);
+					setCurrentPlayer("white");
+					setSelected(null);
+					setMoveStep("select");
+					setGameEnded(false);
+					setWinner(null);
+					setHighlight({ cells: [], type: "" });
+					setPhase("play");
+					window.history.pushState({ phase: "play" }, "", "#play");
+					setStatus("White to move. Select a queen.");
+					setLocked(false);
+					requestAnimationFrame(() => {
+						gameRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+						window.scrollTo({ top: 0, behavior: "smooth" });
+					});
+				};
+
+				const handleCellClick = (r, c) => {
+					if (phase !== "play" || gameEnded) return;
+					if (gameMode === "ai" && currentPlayer !== playerColor) return;
+					const cellVal = board[r][c];
+
+					if (moveStep === "select") {
+						if (cellVal === currentPlayer) {
+							setSelected([r, c]);
+							const moves = getSlides([r, c], board);
+							setHighlight({ cells: moves, type: "highlight-move" });
+							setMoveStep("move");
+							setStatus(`${capitalize(currentPlayer)}: choose where to move.`);
+						}
+						return;
+					}
+
+					if (moveStep === "move") {
+						if (cellVal === currentPlayer) {
+							setSelected([r, c]);
+							const moves = getSlides([r, c], board);
+							setHighlight({ cells: moves, type: "highlight-move" });
+							return;
+						}
+						if (selected && isLegalSlide(selected, [r, c], board) && cellVal === "") {
+							const next = board.map((row) => row.slice());
+							next[r][c] = next[selected[0]][selected[1]];
+							next[selected[0]][selected[1]] = "";
+							setBoard(next);
+							setSelected([r, c]);
+							const arrows = getSlides([r, c], next);
+							setHighlight({ cells: arrows, type: "highlight-arrow" });
+							setMoveStep("arrow");
+							setStatus(`${capitalize(currentPlayer)}: shoot an arrow.`);
+						}
+						return;
+					}
+
+					if (moveStep === "arrow" && selected) {
+						if (isLegalSlide(selected, [r, c], board) && board[r][c] === "") {
+							const next = board.map((row) => row.slice());
+							next[r][c] = "arrow";
+							setBoard(next);
+							setHighlight({ cells: [], type: "" });
+							finishTurn(next);
+						}
+					}
+				};
+
+				const finishTurn = (nextBoard) => {
+					const nextPlayer = opponent(currentPlayer);
+					const hasMoves = generateAllMoves(nextPlayer, nextBoard).length > 0;
+					if (!hasMoves) {
+						const msg = `${capitalize(currentPlayer)} wins! No moves left for ${capitalize(
+							nextPlayer
+						)}.`;
+						setStatus(msg);
+						setGameEnded(true);
+						setWinner(capitalize(currentPlayer));
+						setMoveStep("select");
+						return;
+					}
+					setCurrentPlayer(nextPlayer);
+					setSelected(null);
+					setMoveStep("select");
+					setStatus(`${capitalize(nextPlayer)} to move. Select a queen.`);
+				};
+
+				const runAi = () => {
+					const moves = generateAllMoves(currentPlayer, board);
+					if (!moves.length) {
+						setStatus(
+							`${capitalize(opponent(currentPlayer))} wins! No moves left for ${capitalize(
+								currentPlayer
+							)}.`
+						);
+						setGameEnded(true);
+						setWinner(capitalize(opponent(currentPlayer)));
+						setLocked(false);
+						return;
+					}
+
+					let best = null;
+					let bestScore = -Infinity;
+					for (const move of moves) {
+						const temp = simulateMove(board, move.from, move.to);
+						temp[move.arrow[0]][move.arrow[1]] = "arrow";
+						const myMob = generateAllMoves(currentPlayer, temp).length;
+						const oppMob = generateAllMoves(opponent(currentPlayer), temp).length;
+						const score = myMob - oppMob;
+						if (score > bestScore) {
+							bestScore = score;
+							best = move;
+						}
+					}
+
+					if (best) {
+						const temp = simulateMove(board, best.from, best.to);
+						temp[best.arrow[0]][best.arrow[1]] = "arrow";
+						setBoard(temp);
+						setLocked(false);
+						finishTurn(temp);
+					}
+				};
+
+				const highlightSet = useMemo(
+					() => new Set((highlight.cells || []).map((c) => c.join(","))),
+					[highlight]
+				);
+
+				const cellSize = `clamp(52px, calc(84vmin / ${boardSize}), 94px)`;
+
+				return (
+					<div className="page">
+						<section
+							className="hero"
+							style={{
+								display: phase === "play" ? "none" : "block",
+							}}
+						>
+							<h1>Amazons</h1>
+							<p>
+								Command your warrior queens across a glowing board, blocking foes with
+								flaming arrows. Choose your mode and let strategy light the way.
+							</p>
+							{phase === "landing" && (
+								<div className="actions">
+									<button
+										className="btn"
+										type="button"
+										onClick={() => {
+											setPhase("setup");
+											requestAnimationFrame(() =>
+												setupRef.current?.scrollIntoView({
+													behavior: "smooth",
+													block: "start",
+												})
+											);
+										}}
+									>
+										Play Amazons
+									</button>
+								</div>
+							)}
+						</section>
+
+						{phase === "setup" && (
+							<section className="panel setup-card" ref={setupRef}>
+								<div style={{ width: "100%" }}>
+									<label htmlFor="mode">Game mode</label>
+									<select
+										id="mode"
+										value={gameMode}
+										onChange={(e) => setGameMode(e.target.value)}
+									>
+										<option value="">Select mode</option>
+										<option value="2p">Play with a friend</option>
+										<option value="ai">Play vs computer</option>
+									</select>
+								</div>
+
+								{gameMode && (
+									<div style={{ width: "100%" }}>
+										<label htmlFor="size">Board size</label>
+										<select
+											id="size"
+											value={boardSize}
+											onChange={(e) => setBoardSize(Number(e.target.value))}
+										>
+											<option value={6}>6×6 (fast)</option>
+											<option value={8}>8×8 (classic)</option>
+											<option value={10}>10×10 (standard)</option>
+										</select>
+									</div>
+								)}
+
+								{gameMode === "ai" && (
+									<div style={{ width: "100%" }}>
+										<label htmlFor="color">Your color</label>
+										<select
+											id="color"
+											value={playerColor}
+											onChange={(e) => setPlayerColor(e.target.value)}
+										>
+											<option value="white">Play as White</option>
+											<option value="black">Play as Black</option>
+										</select>
+									</div>
+								)}
+
+								<div style={{ display: "flex", justifyContent: "center", width: "100%", gap: "10px" }}>
+									<button
+										className="btn"
+										type="button"
+										disabled={!gameMode}
+										onClick={startNewGame}
+									>
+										Start game
+									</button>
+								</div>
+							</section>
+						)}
+
+						<section
+							className="panel game-shell"
+							ref={gameRef}
+							style={{ display: phase === "play" ? "block" : "none" }}
+						>
+							<div
+								className="game-top"
+								style={{
+									justifyContent: "space-between",
+									alignItems: "center",
+									gap: "10px",
+								}}
+							>
+								<button className="btn secondary" type="button" onClick={() => setShowRules(true)}>
+									Rules
+								</button>
+								<div className="status" style={{ textAlign: "center", flex: 1 }}>{status}</div>
+								<button
+									className="btn secondary"
+									type="button"
+									onClick={() => {
+										const freshBoard = buildBoard(boardSize);
+										setBoard(freshBoard);
+										setCurrentPlayer("white");
+										setSelected(null);
+										setHighlight({ cells: [], type: "" });
+										setMoveStep("select");
+										setGameEnded(false);
+										setStatus("White to move. Select a queen.");
+									}}
+								>
+									Reset board
+								</button>
+							</div>
+							<div className="board-wrap">
+								<div
+									className={`board ${locked ? "locked" : ""}`}
+									style={{
+										gridTemplateColumns: `repeat(${boardSize}, ${cellSize})`,
+										gridTemplateRows: `repeat(${boardSize}, ${cellSize})`,
+									}}
+								>
+									{board.map((row, r) =>
+										row.map((cell, c) => {
+											const isDark = (r + c) % 2 === 1;
+											const isSelected =
+												selected && selected[0] === r && selected[1] === c;
+											const isHighlighted = highlightSet.has(`${r},${c}`);
+											return (
+												<div
+													key={`${r}-${c}`}
+													className={[
+														"cell",
+														isDark ? "dark" : "",
+														cell === "arrow" ? "arrow" : "",
+														isSelected ? "selected" : "",
+														isHighlighted ? highlight.type : "",
+													].join(" ")}
+													style={{ "--cell-size": cellSize }}
+													onClick={() => handleCellClick(r, c)}
+												>
+													{cell === "white" && <span className="queen white">♕</span>}
+													{cell === "black" && <span className="queen black">♛</span>}
+												</div>
+											);
+										})
+									)}
+								</div>
+							</div>
+						</section>
+
+						{showRules && (
+							<>
+								<button className="modal-close" type="button" onClick={() => setShowRules(false)}>
+									✕
+								</button>
+								<div className="modal-overlay" onClick={() => setShowRules(false)}>
+									<div className="modal-content" onClick={(e) => e.stopPropagation()}>
+										<h2>Amazons – How to Play</h2>
+										<ol style={{ lineHeight: 1.6 }}>
+											<li>Turns: White goes first. On your turn you must move one of your queens and then shoot a flaming arrow.</li>
+											<li>Queen movement: Queens move like a chess queen—any number of empty squares horizontally, vertically, or diagonally, without jumping.</li>
+											<li>Arrow shot: From the queen’s new square, shoot an arrow along any clear queen path. The arrow lands on the first empty square you choose and burns that square.</li>
+											<li>Burnt squares: Burnt squares (🔥) are blocked forever. No queen or arrow can move through or onto them.</li>
+											<li>End of game: If a player at the start of their turn has no legal move+arrow, they lose. The other player wins.</li>
+											<li>Tips: Create territory by cutting off opponent paths with arrows. Avoid trapping your own queens.</li>
+										</ol>
+									</div>
+								</div>
+							</>
+						)}
+
+						{winner && (
+							<>
+								<button className="modal-close" type="button" onClick={() => setWinner(null)}>
+									✕
+								</button>
+								<div className="modal-overlay" onClick={() => setWinner(null)}>
+									<div className="modal-content" onClick={(e) => e.stopPropagation()}>
+										<h2>{winner} won!</h2>
+										<p>Restart for a new game.</p>
+										<button className="btn" type="button" onClick={() => {
+											setWinner(null);
+											startNewGame();
+										}}>
+											Restart
+										</button>
+									</div>
+								</div>
+							</>
+						)}
+					</div>
+				);
+			}
+
+			function capitalize(s) {
+				return s.charAt(0).toUpperCase() + s.slice(1);
+			}
+
+			ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+		</script>
+	</body>
+</html>
