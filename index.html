@@ -65,9 +65,7 @@
 			.floating-layer {
 				position: fixed;
 				inset: 0;
-				pointer-events: none;
-				overflow: hidden;
-				z-index: 1;
+				display: none;
 			}
 
 			.tile-float {
@@ -115,12 +113,12 @@
 			.page {
 				max-width: 1200px;
 				margin: 0 auto;
-				padding: 36px 24px 64px;
+				padding: 0 20px 8px;
 			}
 
 			.hero {
 				text-align: center;
-				padding: 90px 16px 60px;
+				padding: 14px 16px 8px;
 			}
 
 			.hero h1 {
@@ -170,10 +168,10 @@
 			}
 
 			.panel {
-				border-radius: 20px;
-				border: 1px solid var(--border);
-				background: var(--panel);
-				box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+				border-radius: 0;
+				border: none;
+				background: transparent;
+				box-shadow: none;
 			}
 
 			.setup-card {
@@ -208,8 +206,8 @@
 			}
 
 			.game-shell {
-				margin-top: 32px;
-				padding: 20px;
+				margin-top: 8px;
+				padding: 12px 0;
 			}
 
 			.game-top {
@@ -223,10 +221,11 @@
 			.status {
 				font-weight: 800;
 				font-size: 1.05rem;
+				transform: translateY(-10px);
 			}
 
 			.board-wrap {
-				margin-top: 16px;
+				margin-top: -10px;
 				display: flex;
 				justify-content: center;
 			}
@@ -276,8 +275,8 @@
 
 			.cell .queen {
 				text-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-				font-size: 1.55em;
-				font-weight: 900;
+				font-size: 1.35em;
+				font-weight: 750;
 			}
 
 			.cell .queen.white {
@@ -567,45 +566,9 @@
 
 				useEffect(() => {
 					const floaters = document.getElementById("floaters");
-					if (!floaters || floaters.children.length) return;
-					const shapes = [
-						{ top: "6%", left: "10%", rot: "8deg", queen: "♛" },
-						{ top: "14%", right: "14%", rot: "-12deg", queen: "♕" },
-						{ top: "38%", right: "4%", rot: "6deg", dot: true },
-						{ left: "8%", bottom: "30%", rot: "-10deg", queen: "♕" },
-						{ bottom: "12%", right: "10%", rot: "14deg", dot: true },
-						{ left: "14%", top: "52%", rot: "-6deg", queen: "♛" },
-						{ right: "12%", bottom: "20%", rot: "4deg", queen: "♕" },
-						{ top: "22%", left: "46%", rot: "0deg", dot: true },
-						{ bottom: "18%", right: "36%", rot: "-4deg", dot: true },
-						{ bottom: "34%", left: "24%", rot: "6deg", queen: "♛" },
-					];
-					shapes.forEach((shape) => {
-						const el = document.createElement("div");
-						el.className = "tile-float";
-						el.style.setProperty("--rot", `rotate(${shape.rot || "0deg"})`);
-						if (shape.top) el.style.top = shape.top;
-						if (shape.bottom) el.style.bottom = shape.bottom;
-						if (shape.left) el.style.left = shape.left;
-						if (shape.right) el.style.right = shape.right;
-						if (shape.queen) {
-							const q = document.createElement("span");
-							q.className = "mini-piece";
-							q.textContent = shape.queen;
-							q.style.top = "14px";
-							q.style.left = "16px";
-							el.appendChild(q);
-						}
-						if (shape.dot) {
-							const d = document.createElement("div");
-							d.className = "mini-dot";
-							d.style.top = "50%";
-							d.style.left = "50%";
-							d.style.transform = "translate(-50%, -50%)";
-							el.appendChild(d);
-						}
-						floaters.appendChild(el);
-					});
+					if (!floaters) return;
+					// Clear any prior floating shapes and keep background plain
+					floaters.innerHTML = "";
 				}, []);
 
 				useEffect(() => {
