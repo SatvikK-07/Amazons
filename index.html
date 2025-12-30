@@ -325,8 +325,8 @@
 			}
 
 			.modal-content {
-				width: 60vw;
-				max-width: 720px;
+				width: 70vw;
+				max-width: 1100px;
 				max-height: 85vh;
 				overflow-y: auto;
 				background: #fffaf1;
@@ -353,6 +353,45 @@
 				font-size: 1.2rem;
 				cursor: pointer;
 				box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+			}
+
+			.rules-body {
+				display: grid;
+				grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+				gap: 16px;
+				align-items: start;
+			}
+
+			.rules-images {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 12px;
+			}
+
+			.rules-images figure {
+				margin: 0;
+				padding: 8px;
+				border-radius: 12px;
+				background: #fff;
+				border: 1px solid rgba(0, 0, 0, 0.06);
+				box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+
+			.rules-images img {
+				width: 100%;
+				border-radius: 8px;
+				border: 1px solid rgba(0, 0, 0, 0.05);
+				object-fit: cover;
+			}
+
+			.rules-images figcaption {
+				font-weight: 700;
+				color: #3a3125;
+				font-size: 0.95rem;
+				text-align: center;
 			}
 
 			.cell.highlight-move {
@@ -890,14 +929,36 @@
 								<div className="modal-overlay" onClick={() => setShowRules(false)}>
 									<div className="modal-content" onClick={(e) => e.stopPropagation()}>
 										<h2>Amazons – How to Play</h2>
-										<ol style={{ lineHeight: 1.6 }}>
-											<li>Turns: White goes first. On your turn you must move one of your queens and then shoot a flaming arrow.</li>
-											<li>Queen movement: Queens move like a chess queen—any number of empty squares horizontally, vertically, or diagonally, without jumping.</li>
-											<li>Arrow shot: From the queen’s new square, shoot an arrow along any clear queen path. The arrow lands on the first empty square you choose and burns that square.</li>
-											<li>Burnt squares: Burnt squares (🔥) are blocked forever. No queen or arrow can move through or onto them.</li>
-											<li>End of game: If a player at the start of their turn has no legal move+arrow, they lose. The other player wins.</li>
-											<li>Tips: Create territory by cutting off opponent paths with arrows. Avoid trapping your own queens.</li>
-										</ol>
+										<div className="rules-body">
+											<div className="rules-text">
+												<ol style={{ lineHeight: 1.6 }}>
+													<li>Turns: White goes first. On your turn you must move one of your queens and then shoot a flaming arrow.</li>
+													<li>Queen movement: Queens move like a chess queen—any number of empty squares horizontally, vertically, or diagonally, without jumping.</li>
+													<li>Arrow shot: From the queen’s new square, shoot an arrow along any clear queen path. The arrow lands on the first empty square you choose and burns that square.</li>
+													<li>Burnt squares: Burnt squares (🔥) are blocked forever. No queen or arrow can move through or onto them.</li>
+													<li>End of game: If a player at the start of their turn has no legal move+arrow, they lose. The other player wins.</li>
+													<li>Tips: Create territory by cutting off opponent paths with arrows. Avoid trapping your own queens.</li>
+												</ol>
+											</div>
+											<div className="rules-images">
+												<figure>
+													<img src="./setup.png" alt="Setup positions" />
+													<figcaption>Setup</figcaption>
+												</figure>
+												<figure>
+													<img src="./move.png" alt="Queen movement" />
+													<figcaption>Move your queen</figcaption>
+												</figure>
+												<figure>
+													<img src="./fire.png" alt="Shoot fire to block cells" />
+													<figcaption>Shoot fire to block cells</figcaption>
+												</figure>
+												<figure>
+													<img src="./wins.png" alt="Winning example" />
+													<figcaption>Black wins as White queens have no moves left</figcaption>
+												</figure>
+											</div>
+										</div>
 									</div>
 								</div>
 							</>
